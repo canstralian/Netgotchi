@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Netgotchi Web Flasher</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+```
+    body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        padding: 20px;
+    }
+
+    .container {
+        max-width: 800px;
+        margin: 0 auto;
+        background: rgba(255, 255, 255, 0.95);
+        border-radius: 20px;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+    }
+
+    .header {
+        background: linear-gradient(135deg, #ff6b6b, #4ecdc4);
+        color: white;
+        padding: 30px;
+        text-align: center;
+    }
+
+    .header h1 {
+        font-size: 2.5em;
+        margin-bottom: 10px;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+    }
+
+    .header p {
+        font-size: 1.2em;
+        opacity: 0.9;
+    }
+
+    .content {
+        padding: 30px;
+    }
+
+    .step {
+        background: #f8f9fa;
+        border-left: 4px solid #4ecdc4;
+        padding: 20px;
+        margin: 20px 0;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+    }
+
+    .step:hover {
+        transform: translateX(5px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .step h3 {
+        color: #333;
+        margin-bottom: 15px;
+        display: flex;
+        align-items: center;
+    }
+
+    .step-number {
+        background: #4ecdc4;
+        color: white;
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 15px;
+        font-weight: bold;
+    }
+
+    .board-selector {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 15px;
+        margin: 20px 0;
+    }
+
+    .board-option {
+        background: white;
+        border: 2px solid #e9ecef;
+        border-radius: 12px;
+        padding: 20px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .board-option:hover {
+        border-color: #4ecdc4;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .board-option.selected {
+        border-color: #4ecdc4;
+        background: #f0fdfc;
+    }
+
+    .board-option h4 {
+        color: #333;
+        margin-bottom: 10px;
+    }
+
+    .board-option p {
+        color: #666;
+        font-size: 0.9em;
+    }
+
+    .file-upload {
+        border: 2px dashed #4ecdc4;
+        border-radius: 12px;
+        padding: 40px;
+        text-align: center;
+        margin: 20px 0;
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+
+    .file-upload:hover {
+        background: #f0fdfc;
+        border-color: #ff6b6b;
+    }
+
+    .file-upload.dragover {
+        background: #f0fdfc;
+        border-color: #ff6b6b;
+        transform: scale(1.02);
+    }
+
+    .file-upload input {
+        display: none;
+    }
+
+    .file-upload-icon {
+        font-size: 3em;
+        color: #4ecdc4;
+        margin-bottom: 15px;
+    }
+
+    .btn {
+        background: linear-gradient(135deg, #4ecdc4, #44a08d);
+        color: white;
+        border: none;
+        padding: 15px 30px;
+        border-radius: 8px;
+        font-size: 1.1em;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        width: 100%;
+        margin: 10px 0;
+    }
+
+    .btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    .btn:disabled {
+        background: #ccc;
+        cursor: not-allowed;
+        transform: none;
+    }
+
+    .btn-danger {
+        background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+    }
+
+    .progress-container {
+        background: #f8f9fa;
+        border-radius: 8px;
+        padding: 20px;
+        margin: 20px 0;
+        display: none;
+    }
+
+    .progress-bar {
+        background: #e9ecef;
+        height: 20px;
+        border-radius: 10px;
+        overflow: hidden;
+        margin: 10px 0;
+    }
+
+    .progress-fill {
+        background: linear-gradient(90deg, #4ecdc4, #44a08d);
+        height: 100%;
+        width: 0%;
+        transition: width 0.3s ease;
+    }
+
+    .status {
+        padding: 15px;
+        border-radius: 8px;
+        margin: 15px 0;
+        display: none;
+    }
+
+    .status.success {
+        background: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+    }
+
+    .status.error {
+        background: #f8d7da;
+        color: #721c24;
+        border: 1px solid #f5c6cb;
+    }
+
+    .status.info {
+        background: #d1ecf1;
+        color: #0c5460;
+        border: 1px solid #b6e3e9;
+    }
+
+    .console {
+        background: #1a1a1a;
+        color: #00ff00;
+        font-family: 'Courier New', monospace;
+        padding: 20px;
+        border-radius: 8px;
+        height: 200px;
+        overflow-y: auto;
+        margin: 20px 0;
+        display: none;
+    }
+
+    .console pre {
+        margin: 0;
+        white-space: pre-wrap;
+    }
+
+    .warning {
+        background: #fff3cd;
+        color: #856404;
+        border: 1px solid #ffeaa7;
+        padding: 15px;
+        border-radius: 8px;
+        margin: 20px 0;
+    }
+
+    .firmware-info {
+        background: white;
+        border: 1px solid #e9ecef;
+        border-radius: 8px;
+        padding: 20px;
+        margin: 20px 0;
+    }
+
+    .firmware-info h4 {
+        color: #333;
+        margin-bottom: 10px;
+    }
+
+    .firmware-info p {
+        color: #666;
+        margin: 5px 0;
+    }
+
+    @media (max-width: 768px) {
+        .container {
+            margin: 10px;
+        }
+        
+        .header {
+            padding: 20px;
+        }
+        
+        .header h1 {
+            font-size: 2em;
+        }
+        
+        .content {
+            padding: 20px;
+        }
+        
+        .board-selector {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+```
+
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🐾 Netgotchi Web Flasher</h1>
+            <p>Flash Netgotchi firmware directly to your ESP32 board</p>
+        </div>
+
+```
+    <div class="content">
+        <div class="warning">
+            <strong>⚠️ Browser Compatibility:</strong> This flasher requires a Chromium-based browser (Chrome, Edge, Opera) with Web Serial API support. Make sure your ESP32 is in download mode before connecting.
+        </div>
+
+        <div class="step">
+            <h3><span class="step-number">1</span>Select Your Board</h3>
+            <div class="board-selector">
+                <div class="board-option" data-board="esp32-cyd">
+                    <h4>ESP32 CYD</h4>
+                    <p>Cheap Yellow Display<br>ESP32-2432S028R</p>
+                </div>
+                <div class="board-option" data-board="esp32-generic">
+                    <h4>ESP32 Generic</h4>
+                    <p>Standard ESP32<br>Dev Board</p>
+                </div>
+                <div class="board-option" data-board="esp32-s3">
+                    <h4>ESP32-S3</h4>
+                    <p>ESP32-S3 based<br>boards</p>
+                </div>
+                <div class="board-option" data-board="esp32-c3">
+                    <h4>ESP32-C3</h4>
+                    <p>ESP32-C3 RISC-V<br>boards</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="step">
+            <h3><span class="step-number">2</span>Upload Firmware</h3>
+            <div class="file-upload" id="fileUpload">
+                <div class="file-upload-icon">📁</div>
+                <h4>Drop your Netgotchi .bin file here or click to browse</h4>
+                <p>Supported: .bin firmware files</p>
+                <input type="file" id="firmwareFile" accept=".bin">
+            </div>
+            <div class="firmware-info" id="firmwareInfo" style="display: none;">
+                <h4>Firmware Information</h4>
+                <p id="firmwareDetails"></p>
+            </div>
+        </div>
+
+        <div class="step">
+            <h3><span class="step-number">3</span>Connect & Flash</h3>
+            <button class="btn" id="connectBtn">Connect to ESP32</button>
+            <button class="btn" id="flashBtn" disabled>Flash Firmware</button>
+            <button class="btn btn-danger" id="eraseBtn" disabled>Erase Flash</button>
+        </div>
+
+        <div class="progress-container" id="progressContainer">
+            <h4>Flashing Progress</h4>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+            <p id="progressText">Preparing...</p>
+        </div>
+
+        <div class="status" id="statusMessage"></div>
+
+        <div class="console" id="console">
+            <pre id="consoleOutput"></pre>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/esptool-js/0.4.4/esptool.min.js"></script>
+<script>
+    class NetgotchiFlasher {
+        constructor() {
+            this.selectedBoard = null;
+            this.firmwareFile = null;
+            this.espLoader = null;
+            this.isConnected = false;
+            
+            this.initializeEventListeners();
+            this.checkWebSerialSupport();
+        }
+
+        checkWebSerialSupport() {
+            if (!navigator.serial) {
+                this.showStatus('error', 'Web Serial API not supported. Please use Chrome, Edge, or Opera browser.');
+                document.getElementById('connectBtn').disabled = true;
+            }
+        }
+
+        initializeEventListeners() {
+            // Board selection
+            document.querySelectorAll('.board-option').forEach(option => {
+                option.addEventListener('click', (e) => this.selectBoard(e.target.closest('.board-option')));
+            });
+
+            // File upload
+            const fileUpload = document.getElementById('fileUpload');
+            const fileInput = document.getElementById('firmwareFile');
+            
+            fileUpload.addEventListener('click', () => fileInput.click());
+            fileUpload.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                fileUpload.classList.add('dragover');
+            });
+            fileUpload.addEventListener('dragleave', () => {
+                fileUpload.classList.remove('dragover');
+            });
+            fileUpload.addEventListener('drop', (e) => {
+                e.preventDefault();
+                fileUpload.classList.remove('dragover');
+                if (e.dataTransfer.files.length > 0) {
+                    this.handleFileSelect(e.dataTransfer.files[0]);
+                }
+            });
+            
+            fileInput.addEventListener('change', (e) => {
+                if (e.target.files.length > 0) {
+                    this.handleFileSelect(e.target.files[0]);
+                }
+            });
+
+            // Buttons
+            document.getElementById('connectBtn').addEventListener('click', () => this.connectToDevice());
+            document.getElementById('flashBtn').addEventListener('click', () => this.flashFirmware());
+            document.getElementById('eraseBtn').addEventListener('click', () => this.eraseFlash());
+        }
+
+        selectBoard(option) {
+            document.querySelectorAll('.board-option').forEach(opt => opt.classList.remove('selected'));
+            option.classList.add('selected');
+            this.selectedBoard = option.dataset.board;
+            this.updateFlashButton();
+        }
+
+        handleFileSelect(file) {
+            if (!file.name.endsWith('.bin')) {
+                this.showStatus('error', 'Please select a .bin firmware file.');
+                return;
+            }
+
+            this.firmwareFile = file;
+            document.getElementById('firmwareInfo').style.display = 'block';
+            document.getElementById('firmwareDetails').innerHTML = `
+                <strong>File:</strong> ${file.name}<br>
+                <strong>Size:</strong> ${(file.size / 1024 / 1024).toFixed(2)} MB<br>
+                <strong>Type:</strong> ${file.type || 'application/octet-stream'}
+            `;
+            
+            this.updateFlashButton();
+            this.showStatus('success', 'Firmware file loaded successfully!');
+        }
+
+        updateFlashButton() {
+            const flashBtn = document.getElementById('flashBtn');
+            flashBtn.disabled = !(this.selectedBoard && this.firmwareFile && this.isConnected);
+        }
+
+        async connectToDevice() {
+            try {
+                this.showStatus('info', 'Requesting device connection...');
+                this.log('Connecting to ESP32...');
+
+                const port = await navigator.serial.requestPort();
+                
+                this.espLoader = new ESPLoader({
+                    port: port,
+                    baudrate: 115200,
+                    terminal: {
+                        clean: () => {},
+                        writeLine: (data) => this.log(data),
+                        write: (data) => this.log(data, false)
+                    }
+                });
+
+                await this.espLoader.connect();
+                
+                const chipInfo = await this.espLoader.chipInfo();
+                this.log(`Connected to ${chipInfo.name}`);
+                
+                this.isConnected = true;
+                document.getElementById('connectBtn').textContent = 'Connected ✓';
+                document.getElementById('connectBtn').disabled = true;
+                document.getElementById('eraseBtn').disabled = false;
+                
+                this.updateFlashButton();
+                this.showStatus('success', `Connected to ${chipInfo.name} successfully!`);
+                
+            } catch (error) {
+                this.log(`Connection failed: ${error.message}`);
+                this.showStatus('error', `Failed to connect: ${error.message}`);
+            }
+        }
+
+        async flashFirmware() {
+            if (!this.espLoader || !this.firmwareFile) {
+                this.showStatus('error', 'Device not connected or firmware not selected.');
+                return;
+            }
+
+            try {
+                this.showStatus('info', 'Starting firmware flash...');
+                this.showProgress(true);
+                this.log('Starting firmware flash process...');
+
+                // Read firmware file
+                const firmwareData = new Uint8Array(await this.firmwareFile.arrayBuffer());
+                
+                // Get flash configuration based on board type
+                const flashConfig = this.getFlashConfig();
+                
+                this.updateProgress(10, 'Preparing flash...');
+                
+                // Prepare for flashing
+                await this.espLoader.flashBegin(firmwareData.length, flashConfig.offset);
+                
+                // Flash in chunks
+                const chunkSize = 4096;
+                let offset = 0;
+                
+                while (offset < firmwareData.length) {
+                    const chunk = firmwareData.slice(offset, offset + chunkSize);
+                    await this.espLoader.flashData(chunk);
+                    
+                    offset += chunkSize;
+                    const progress = 10 + (offset / firmwareData.length) * 80;
+                    this.updateProgress(progress, `Flashing... ${Math.round(progress)}%`);
+                }
+                
+                this.updateProgress(90, 'Finalizing...');
+                await this.espLoader.flashFinish();
+                
+                this.updateProgress(100, 'Flash complete!');
+                this.log('Firmware flashed successfully!');
+                this.showStatus('success', 'Netgotchi firmware flashed successfully! You can now disconnect and restart your ESP32.');
+                
+                setTimeout(() => this.showProgress(false), 3000);
+                
+            } catch (error) {
+                this.log(`Flash failed: ${error.message}`);
+                this.showStatus('error', `Flash failed: ${error.message}`);
+                this.showProgress(false);
+            }
+        }
+
+        async eraseFlash() {
+            if (!this.espLoader) {
+                this.showStatus('error', 'Device not connected.');
+                return;
+            }
+
+            if (!confirm('This will erase all data on the ESP32. Continue?')) {
+                return;
+            }
+
+            try {
+                this.showStatus('info', 'Erasing flash memory...');
+                this.showProgress(true);
+                this.log('Erasing flash memory...');
+                
+                this.updateProgress(50, 'Erasing...');
+                await this.espLoader.eraseFlash();
+                
+                this.updateProgress(100, 'Erase complete!');
+                this.log('Flash erased successfully!');
+                this.showStatus('success', 'Flash memory erased successfully!');
+                
+                setTimeout(() => this.showProgress(false), 2000);
+                
+            } catch (error) {
+                this.log(`Erase failed: ${error.message}`);
+                this.showStatus('error', `Erase failed: ${error.message}`);
+                this.showProgress(false);
+            }
+        }
+
+        getFlashConfig() {
+            const configs = {
+                'esp32-cyd': { offset: 0x1000, size: 4 * 1024 * 1024 },
+                'esp32-generic': { offset: 0x1000, size: 4 * 1024 * 1024 },
+                'esp32-s3': { offset: 0x0000, size: 8 * 1024 * 1024 },
+                'esp32-c3': { offset: 0x0000, size: 4 * 1024 * 1024 }
+            };
+            
+            return configs[this.selectedBoard] || configs['esp32-generic'];
+        }
+
+        showStatus(type, message) {
+            const statusEl = document.getElementById('statusMessage');
+            statusEl.className = `status ${type}`;
+            statusEl.textContent = message;
+            statusEl.style.display = 'block';
+            
+            if (type === 'success' || type === 'error') {
+                setTimeout(() => {
+                    statusEl.style.display = 'none';
+                }, 5000);
+            }
+        }
+
+        showProgress(show) {
+            document.getElementById('progressContainer').style.display = show ? 'block' : 'none';
+            if (!show) {
+                this.updateProgress(0, '');
+            }
+        }
+
+        updateProgress(percent, text) {
+            document.getElementById('progressFill').style.width = `${percent}%`;
+            document.getElementById('progressText').textContent = text;
+        }
+
+        log(message, newLine = true) {
+            const console = document.getElementById('console');
+            const output = document.getElementById('consoleOutput');
+            
+            console.style.display = 'block';
+            
+            if (newLine) {
+                output.textContent += message + '\n';
+            } else {
+                output.textContent += message;
+            }
+            
+            console.scrollTop = console.scrollHeight;
+        }
+    }
+
+    // Initialize the flasher when page loads
+    document.addEventListener('DOMContentLoaded', () => {
+        new NetgotchiFlasher();
+    });
+</script>
+```
+
+</body>
+</html>
