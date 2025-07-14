@@ -95,6 +95,33 @@ void networkInit()
         server.send(200, "text/plain", "Hour- command received");
     });
 
+    server.on("/ai/report", HTTP_GET, [](){
+        server.send(200, "text/plain", getAIAnalysisReport());
+    });
+
+    server.on("/vuln/scan", HTTP_GET, [](){
+        // Trigger immediate vulnerability scan
+        for (int j = 1; j < 255; j++) {
+          if (ips[j] == 1 || ips[j] == 2) {
+            IPAddress targetIP = IPAddress(currentIP[0], currentIP[1], currentIP[2], j);
+            performAdvancedScan(targetIP);
+          }
+        }
+        server.send(200, "text/plain", "Vulnerability scan initiated");
+    });
+
+    server.on("/vuln/report", HTTP_GET, [](){
+        server.send(200, "text/plain", generateVulnReport());
+    });
+
+    server.on("/power/status", HTTP_GET, [](){
+        server.send(200, "text/plain", getPowerReport());
+    });
+
+    server.on("/security/score", HTTP_GET, [](){
+        server.send(200, "text/plain", "Security Score: " + String(calculateSecurityScore()) + "/100");
+    });
+
     server.begin();
   }
 
@@ -139,30 +166,43 @@ void networkFunctionsLoop()
     }
   }
 
-  //Ping Scan
+  //Ping Scan with AI analysis
   if (startScan) {
     if (i < 256) {
-      pingNetwork(i);
+      bool deviceActive = pingNetwork(i);
+      
+      // AI behavioral analysis
+      IPAddress ip = IPAddress(currentIP[0], currentIP[1], currentIP[2], i);
+      analyzeDeviceBehavior(ip, deviceActive);
+      
       i++;
     } else {
       i = 0;
       ipnum = 0;
       vulnerabilitiesFound = 0;
+      
+      // Perform advanced vulnerability scan on active devices
+      performAdvancedNetworkScan();
     }
   }
 
   //honeypot Checks
   ftpHoneypotScan();
+  
+  // Power management
+  managePowerMode();
 
   // Handle webInterface requests
   if(webInterface) server.handleClient();
 
 }
 
-void pingNetwork(int i) {
+bool pingNetwork(int i) {
   status = "Scanning";
   IPAddress ip = IPAddress(currentIP[0], currentIP[1], currentIP[2], i);
-  if (Ping.ping(ip, 1)) {
+  bool isAlive = Ping.ping(ip, 1);
+  
+  if (isAlive) {
     SerialPrintLn("Alive");
     SerialPrintLn(ip);
 
@@ -181,6 +221,29 @@ void pingNetwork(int i) {
     else if (ips[i] == 1) ips[i] = -1;
     else if (ips[i] == 2) ips[i] = -1;
     else ips[i] = 0;
+  }
+  
+  return isAlive;
+}
+
+void performAdvancedNetworkScan() {
+  static unsigned long lastAdvancedScan = 0;
+  
+  // Perform advanced scan every 5 minutes
+  if (millis() - lastAdvancedScan > 300000) {
+    lastAdvancedScan = millis();
+    
+    Serial.println("Starting advanced vulnerability scan...");
+    
+    // Scan all active devices
+    for (int j = 1; j < 255; j++) {
+      if (ips[j] == 1 || ips[j] == 2) { // Active or vulnerable devices
+        IPAddress targetIP = IPAddress(currentIP[0], currentIP[1], currentIP[2], j);
+        performAdvancedScan(targetIP);
+      }
+    }
+    
+    Serial.println("Advanced scan completed. Security score: " + String(calculateSecurityScore()));
   }
 }
 
