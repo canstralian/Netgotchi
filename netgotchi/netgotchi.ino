@@ -36,8 +36,8 @@ const float VERSION = 1.63;
 #define oled_type_sh1106 0
 #define oled_type_ssd1305 0
 
-//For the cheap aliexpress boards with embedded OLED
-#define NodeMCU_Oled 1 //set oled type to ssd1306
+//For ESP32 WROOM with external OLED
+#define NodeMCU_Oled 0 //set to 0 for ESP32 WROOM, uses default I2C pins (21,22)
 
 #define BTN_RIGHT 13
 #define BTN_LEFT 12 
