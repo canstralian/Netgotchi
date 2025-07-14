@@ -1,0 +1,4 @@
+modules = ["cpp-clang14", "c-clang14", "web", "bash", "nodejs-20"]
+
+[nix]
+channel = "stable-24_05"
