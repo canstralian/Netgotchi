@@ -340,7 +340,7 @@ void displayDisplay() {
   if (hasDisplay) display.display();
 }
 void displayDrawLine(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, uint16_t color) {
-  if (hasDisplay) display.drawLine(x0, y0, x1, y1, color);
+  if (hasDisplay) display.drawLine(x0, y0, x1, x1, color);
 }
 void displayDrawCircle(uint16_t x, uint16_t y, uint16_t radius, uint16_t color) {
   if (hasDisplay) display.drawCircle(x, y, radius, color);
@@ -362,12 +362,110 @@ void SerialPrintLn(int message) {
   if (debug) Serial.println(message);
 }
 
+void setupMobileWebInterface() {
+  // Define the handler for the root path
+  server.on("/", []() {
+    server.send_P(200, "text/html", pagehtml);
+  });
+
+  // Define the handler for the /matrix path
+  server.on("/matrix", HTTP_GET, []() {
+    String json = "[";
+    for (int y = 0; y < SCREEN_HEIGHT; y++) {
+      json += "[";
+      for (int x = 0; x < SCREEN_WIDTH; x++) {
+        uint8_t byte = displayGetBuffer()[x / 8 + (SCREEN_HEIGHT - 1 - y) / 8 * SCREEN_WIDTH / 8];
+        bool bit = byte & (1 << (7 - x % 8));
+        json += String(bit ? 1 : 0);
+        if (x < SCREEN_WIDTH - 1) json += ",";
+      }
+      json += "]";
+      if (y < SCREEN_HEIGHT - 1) json += ",";
+    }
+    json += "]";
+    server.send(200, "application/json", json);
+  });
+
+  server.on("/command/left", HTTP_GET, []() {
+    SerialPrintLn("Left command received");
+    server.send(200, "text/plain", "Left command received");
+  });
+
+  server.on("/command/right", HTTP_GET, []() {
+    SerialPrintLn("Right command received");
+    server.send(200, "text/plain", "Right command received");
+  });
+  server.on("/command/A", HTTP_GET, []() {
+    SerialPrintLn("A command received");
+    server.send(200, "text/plain", "A command received");
+  });
+  server.on("/command/B", HTTP_GET, []() {
+    SerialPrintLn("B command received");
+    server.send(200, "text/plain", "B command received");
+  });
+  server.on("/command/ON", HTTP_GET, []() {
+    SerialPrintLn("PIN ON command received");
+    if(EXT_PIN_16!= -1)digitalWrite(EXT_PIN_16, HIGH);
+    server.send(200, "text/plain", "PIN ON command received");
+  });
+    server.on("/command/OFF", HTTP_GET, []() {
+    SerialPrintLn("PIN OFF command received");
+      if (EXT_PIN_16 != -1) digitalWrite(EXT_PIN_16, LOW);
+    server.send(200, "text/plain", "PIN OFF command received");
+  });
+      server.on("/command/TIMEPLUS", HTTP_GET, []() {
+    SerialPrintLn("TIME + command received");
+        timeOffset = timeOffset + 3600;
+        timeClient.setTimeOffset(timeOffset);
+    server.send(200, "text/plain", "TIME + command received");
+  });
+        server.on("/command/TIMEMINUS", HTTP_GET, []() {
+    SerialPrintLn("TIME - command received");
+          timeOffset = timeOffset - 3600;
+        timeClient.setTimeOffset(timeOffset);
+    server.send(200, "text/plain", "TIME - command received");
+  });
+  server.on("/hosts", HTTP_GET, []() {
+    String hostData = "";
+    for (int i = 0; i < max_ip; i++) {
+      if (ips[i] == 1) {
+        hostData += String(i + 1) + ", ";
+      }
+    }
+    server.send(200, "text/plain", hostData);
+  });
+  server.on("/headless", HTTP_GET, []() {
+        server.send(200, "text/plain", headlessStatus);
+  });
+  server.begin();
+  SerialPrintLn("HTTP server started");
+}
 
 void setup() {
   Serial.begin(115200);
-  if (NodeMCU_Oled) Wire.begin(14, 12);
+  SerialPrintLn("Netgotchi starting...");
+
   displayInit();
-  loaderSetup();
+  netgotchiIntro();
+
+  initStars();
+  //initPowerManagement();  //Removed since not present in original code
+
+  //checkOfflineMode(); //Removed since not present in original code
+
+  if (enableNetworkMode) {
+    wifiManagerSetup(); //removed wifiManagerSetup
+    setupWebServer(); //removed setupWebServer
+    setupMobileWebInterface(); // Add mobile-optimized interface
+    timeClient.begin();
+    //setupHoneypot(); //Removed since not present in original code
+  }
+
+  //buttonsInit();//Removed since not present in original code
+  //loadSettings();//Removed since not present in original code
+
+  SerialPrintLn("Setup completed");
+  SerialPrintLn("Mobile interface available at: http://" + WiFi.localIP().toString());
 }
 
 void loop() {
@@ -385,7 +483,7 @@ void headlessInfo() {
 
 void netgotchi_setup()
 {
-  
+
   displayInit();
   if(hasControlsButtons)checkOfflineMode();
   netgotchiIntro();

@@ -95,6 +95,9 @@ void enterLowPowerMode() {
   intervalScan = intervalScan * 2; // Double scan interval
   intervalPing = intervalPing * 2; // Double ping interval
   
+  // Mobile optimization: reduce web interface refresh rate
+  webInterfaceRefreshRate = 10000; // Slower refresh for mobile
+  
   // Reduce display brightness (if supported by your display)
   #ifdef HAS_BRIGHTNESS_CONTROL
     setBrightness(50); // 50% brightness

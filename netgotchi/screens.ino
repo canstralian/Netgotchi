@@ -24,6 +24,11 @@ void displayInit()
         for (;;);
       }
     }
+    
+    // Mobile optimization: increase contrast and brightness
+    #ifdef SSD1306_SWITCHCAPVCC
+      display.setContrast(255); // Maximum contrast for mobile viewing
+    #endif
   }
 }
 
