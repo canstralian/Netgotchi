@@ -257,7 +257,7 @@ void handleCommand(String command) {
     } else if (command == "A") {
        handleButtons(BTN_A);
     } else if (command == "B") {
-       handleButtons(BTN_A);
+       handleButtons(BTN_B);
     }
 }
 
